@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { ROLE_LABELS } from '@/types/auth';
+import { ROLE_LABELS, ROLE_NAV_ACCESS } from '@/types/auth';
 import {
   LayoutDashboard, ShoppingCart, Palette, Package, Factory,
   BarChart3, Brain, Bell, LogOut, Cpu, Settings, FileText
@@ -20,6 +20,8 @@ const NAV_ITEMS = [
 const AppSidebar: React.FC = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const allowedRoutes = user ? ROLE_NAV_ACCESS[user.role] : [];
+  const visibleNav = NAV_ITEMS.filter(item => allowedRoutes.includes(item.to));
 
   return (
     <aside className="w-64 min-h-screen bg-sidebar flex flex-col border-r border-sidebar-border shrink-0">
@@ -38,7 +40,7 @@ const AppSidebar: React.FC = () => {
 
       {/* Navigation */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto scrollbar-thin">
-        {NAV_ITEMS.map(item => {
+        {visibleNav.map(item => {
           const isActive = location.pathname === item.to;
           return (
             <NavLink

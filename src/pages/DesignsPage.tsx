@@ -2,7 +2,23 @@ import React from 'react';
 import AppHeader from '@/components/layout/AppHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { designs } from '@/data/mockData';
-import { Palette, MessageSquare, Eye } from 'lucide-react';
+import { MessageSquare, Eye } from 'lucide-react';
+
+import designSummerBreeze from '@/assets/design-summer-breeze.jpg';
+import designArcticThermals from '@/assets/design-arctic-thermals.jpg';
+import designUrbanVest from '@/assets/design-urban-vest.jpg';
+import designEcoComfort from '@/assets/design-eco-comfort.jpg';
+import designSportSocks from '@/assets/design-sport-socks.jpg';
+import designHeritageClassic from '@/assets/design-heritage-classic.jpg';
+
+const DESIGN_IMAGES: Record<string, string> = {
+  'DSN-001': designSummerBreeze,
+  'DSN-002': designArcticThermals,
+  'DSN-003': designUrbanVest,
+  'DSN-004': designEcoComfort,
+  'DSN-005': designSportSocks,
+  'DSN-006': designHeritageClassic,
+};
 
 const DesignsPage: React.FC = () => {
   return (
@@ -12,9 +28,12 @@ const DesignsPage: React.FC = () => {
         <div className="grid grid-cols-3 gap-4">
           {designs.map(design => (
             <div key={design.id} className="glass-card rounded-xl p-5 hover:border-primary/30 transition-colors group">
-              {/* Placeholder design preview */}
-              <div className="w-full h-36 rounded-lg bg-secondary/50 mb-4 flex items-center justify-center overflow-hidden">
-                <Palette className="w-10 h-10 text-muted-foreground/30 group-hover:text-primary/50 transition-colors" />
+              <div className="w-full h-36 rounded-lg bg-secondary/50 mb-4 overflow-hidden">
+                <img
+                  src={DESIGN_IMAGES[design.id]}
+                  alt={design.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
               <div className="flex items-start justify-between mb-2">
                 <div>
