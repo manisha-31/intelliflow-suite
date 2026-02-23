@@ -15,6 +15,12 @@ import DesignerWorkspace from "@/pages/designer/DesignerWorkspace";
 import FactoryProduction from "@/pages/factory/FactoryProduction";
 import DistributorOrders from "@/pages/distributor/DistributorOrders";
 import CollectionsPage from "@/pages/CollectionsPage";
+import ApprovalsPage from "@/pages/ApprovalsPage";
+import ProductionOverviewPage from "@/pages/ProductionOverviewPage";
+import CampaignsPage from "@/pages/CampaignsPage";
+import UsersPage from "@/pages/admin/UsersPage";
+import AnalyticsPage from "@/pages/admin/AnalyticsPage";
+import AIInsightsPage from "@/pages/AIInsightsPage";
 import UnauthorizedPage from "@/pages/UnauthorizedPage";
 import NotFound from "@/pages/NotFound";
 import { Loader2 } from "lucide-react";
@@ -57,12 +63,12 @@ const App = () => (
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               {/* Admin routes */}
               <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><div className="text-muted-foreground">User Management — coming soon</div></ProtectedRoute>} />
-              <Route path="/admin/analytics" element={<ProtectedRoute allowedRoles={['admin']}><div className="text-muted-foreground">Analytics — coming soon</div></ProtectedRoute>} />
+              <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><UsersPage /></ProtectedRoute>} />
+              <Route path="/admin/analytics" element={<ProtectedRoute allowedRoles={['admin']}><AnalyticsPage /></ProtectedRoute>} />
 
               {/* Marketing routes */}
               <Route path="/marketing/dashboard" element={<ProtectedRoute allowedRoles={['admin', 'marketing_manager']}><MarketingDashboard /></ProtectedRoute>} />
-              <Route path="/marketing/campaigns" element={<ProtectedRoute allowedRoles={['admin', 'marketing_manager']}><div className="text-muted-foreground">Campaigns — coming soon</div></ProtectedRoute>} />
+              <Route path="/marketing/campaigns" element={<ProtectedRoute allowedRoles={['admin', 'marketing_manager']}><CampaignsPage /></ProtectedRoute>} />
 
               {/* Designer routes */}
               <Route path="/designer/workspace" element={<ProtectedRoute allowedRoles={['admin', 'designer']}><DesignerWorkspace /></ProtectedRoute>} />
@@ -75,9 +81,9 @@ const App = () => (
 
               {/* Shared routes */}
               <Route path="/collections" element={<CollectionsPage />} />
-              <Route path="/approvals" element={<ProtectedRoute allowedRoles={['admin', 'marketing_manager']}><div className="text-muted-foreground">Approvals — coming soon</div></ProtectedRoute>} />
-              <Route path="/production" element={<ProtectedRoute allowedRoles={['admin']}><div className="text-muted-foreground">Production Overview — coming soon</div></ProtectedRoute>} />
-              <Route path="/ai-insights" element={<ProtectedRoute allowedRoles={['admin', 'marketing_manager']}><div className="text-muted-foreground">AI Insights — coming soon</div></ProtectedRoute>} />
+              <Route path="/approvals" element={<ProtectedRoute allowedRoles={['admin', 'marketing_manager']}><ApprovalsPage /></ProtectedRoute>} />
+              <Route path="/production" element={<ProtectedRoute allowedRoles={['admin']}><ProductionOverviewPage /></ProtectedRoute>} />
+              <Route path="/ai-insights" element={<ProtectedRoute allowedRoles={['admin', 'marketing_manager']}><AIInsightsPage /></ProtectedRoute>} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
