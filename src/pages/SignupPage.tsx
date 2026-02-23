@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import modenikLogo from '@/assets/modenik-logo.png';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
@@ -46,11 +47,9 @@ const SignupPage: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-2xl gradient-primary mx-auto flex items-center justify-center glow-primary">
-            <span className="text-2xl font-bold text-primary-foreground font-heading">IF</span>
-          </div>
-          <h1 className="text-3xl font-bold font-heading text-foreground">Join IntelliFlow</h1>
-          <p className="text-muted-foreground font-body">Create your account to get started</p>
+          <img src={modenikLogo} alt="Modenik Lifestyle" className="w-16 h-16 rounded-2xl mx-auto glow-primary object-cover" />
+          <h1 className="text-3xl font-bold font-heading text-foreground">Join Modenik Lifestyle</h1>
+          <p className="text-muted-foreground font-body">Create your IntelliFlow Suite account</p>
         </div>
 
         <Card className="border-border/50 shadow-lg">

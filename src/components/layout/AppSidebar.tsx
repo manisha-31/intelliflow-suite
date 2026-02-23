@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { ROLE_LABELS, ROLE_NAV_ITEMS, ROLE_COLORS } from '@/types/auth';
+import modenikLogo from '@/assets/modenik-logo.png';
 import {
   LayoutDashboard, FolderOpen, CheckCircle, Factory, Megaphone,
   Users, BarChart3, Brain, LogOut, Palette, ShoppingCart,
@@ -25,12 +26,10 @@ const AppSidebar: React.FC = () => {
       {/* Brand */}
       <div className="p-5 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center glow-primary">
-            <span className="text-lg font-bold text-primary-foreground font-heading">IF</span>
-          </div>
+          <img src={modenikLogo} alt="Modenik Lifestyle" className="w-10 h-10 rounded-xl object-cover" />
           <div>
-            <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight font-heading">IntelliFlow</h1>
-            <p className="text-[10px] text-sidebar-foreground uppercase tracking-widest font-body">Suite</p>
+            <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight font-heading">Modenik</h1>
+            <p className="text-[10px] text-sidebar-foreground uppercase tracking-widest font-body">Lifestyle</p>
           </div>
         </div>
       </div>
