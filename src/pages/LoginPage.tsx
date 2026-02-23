@@ -8,7 +8,15 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import modenikLogo from '@/assets/modenik-logo.png';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, KeyRound } from 'lucide-react';
+
+const demoAccounts = [
+  { role: 'Admin', email: 'admin@modenik.com', password: 'test123456' },
+  { role: 'Marketing', email: 'marketing@modenik.com', password: 'test123456' },
+  { role: 'Designer', email: 'designer@modenik.com', password: 'test123456' },
+  { role: 'Factory', email: 'factory@modenik.com', password: 'test123456' },
+  { role: 'Distributor', email: 'distributor@modenik.com', password: 'test123456' },
+];
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -35,7 +43,7 @@ const LoginPage: React.FC = () => {
   }, [profile, navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 relative">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center space-y-2">
           <img src={modenikLogo} alt="Modenik Lifestyle" className="w-16 h-16 rounded-2xl mx-auto glow-primary object-cover" />
@@ -69,6 +77,29 @@ const LoginPage: React.FC = () => {
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Demo accounts — bottom right */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <div className="bg-card/90 backdrop-blur border border-border/60 rounded-lg p-3 shadow-lg w-52">
+          <div className="flex items-center gap-1.5 mb-2">
+            <KeyRound className="w-3 h-3 text-primary" />
+            <span className="text-[10px] font-heading text-muted-foreground tracking-wider">Demo Accounts</span>
+          </div>
+          <div className="space-y-1">
+            {demoAccounts.map(a => (
+              <button
+                key={a.role}
+                type="button"
+                onClick={() => { setEmail(a.email); setPassword(a.password); }}
+                className="w-full flex items-center justify-between px-2 py-1.5 rounded text-xs font-body hover:bg-muted/60 transition-colors group"
+              >
+                <span className="text-foreground group-hover:text-primary transition-colors">{a.role}</span>
+                <span className="text-[10px] text-muted-foreground truncate ml-2">{a.email}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
