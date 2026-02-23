@@ -2,66 +2,116 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
 @layer base {
   :root {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 93%;
+    /* IntelliFlow Suite — Elegant Fashion Brand Palette */
+    --background: 30 33% 97%;
+    --foreground: 240 20% 12%;
 
-    --card: 222 44% 8%;
-    --card-foreground: 210 40% 93%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 20% 12%;
 
-    --popover: 222 44% 10%;
-    --popover-foreground: 210 40% 93%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 20% 12%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 6%;
+    --primary: 356 56% 52%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 30% 14%;
-    --secondary-foreground: 210 40% 85%;
+    --secondary: 240 33% 14%;
+    --secondary-foreground: 30 33% 97%;
 
-    --muted: 222 30% 12%;
-    --muted-foreground: 215 20% 55%;
+    --muted: 30 20% 92%;
+    --muted-foreground: 240 10% 46%;
 
-    --accent: 160 84% 39%;
-    --accent-foreground: 222 47% 6%;
+    --accent: 41 72% 58%;
+    --accent-foreground: 240 20% 12%;
 
     --destructive: 0 72% 51%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 222 47% 6%;
+    --warning: 43 90% 50%;
+    --warning-foreground: 240 20% 12%;
 
-    --success: 160 84% 39%;
-    --success-foreground: 222 47% 6%;
+    --success: 140 25% 49%;
+    --success-foreground: 0 0% 100%;
 
-    --info: 217 91% 60%;
-    --info-foreground: 222 47% 6%;
+    --info: 214 32% 51%;
+    --info-foreground: 0 0% 100%;
 
-    --border: 222 30% 16%;
-    --input: 222 30% 16%;
-    --ring: 217 91% 60%;
+    --border: 30 15% 88%;
+    --input: 30 15% 88%;
+    --ring: 356 56% 52%;
 
-    --radius: 0.5rem;
+    --radius: 0.625rem;
 
-    --sidebar-background: 222 47% 5%;
-    --sidebar-foreground: 210 40% 75%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 222 47% 6%;
-    --sidebar-accent: 222 30% 12%;
-    --sidebar-accent-foreground: 210 40% 93%;
-    --sidebar-border: 222 30% 14%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-background: 240 33% 14%;
+    --sidebar-foreground: 30 20% 80%;
+    --sidebar-primary: 356 56% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 25% 20%;
+    --sidebar-accent-foreground: 30 33% 97%;
+    --sidebar-border: 240 25% 20%;
+    --sidebar-ring: 356 56% 52%;
 
-    --chart-1: 217 91% 60%;
-    --chart-2: 160 84% 39%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 0 72% 51%;
+    --chart-1: 356 56% 52%;
+    --chart-2: 41 72% 58%;
+    --chart-3: 140 25% 49%;
+    --chart-4: 214 32% 51%;
+    --chart-5: 280 45% 55%;
+  }
 
-    --glow-primary: 0 0 20px hsl(217 91% 60% / 0.3);
-    --glow-accent: 0 0 20px hsl(160 84% 39% / 0.3);
+  .dark {
+    --background: 240 33% 8%;
+    --foreground: 30 20% 90%;
+
+    --card: 240 30% 11%;
+    --card-foreground: 30 20% 90%;
+
+    --popover: 240 30% 13%;
+    --popover-foreground: 30 20% 90%;
+
+    --primary: 356 56% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 25% 18%;
+    --secondary-foreground: 30 20% 85%;
+
+    --muted: 240 25% 15%;
+    --muted-foreground: 30 10% 55%;
+
+    --accent: 41 72% 58%;
+    --accent-foreground: 240 20% 12%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --warning: 43 90% 50%;
+    --warning-foreground: 240 20% 12%;
+
+    --success: 140 25% 49%;
+    --success-foreground: 0 0% 100%;
+
+    --info: 214 32% 51%;
+    --info-foreground: 0 0% 100%;
+
+    --border: 240 25% 20%;
+    --input: 240 25% 20%;
+    --ring: 356 56% 52%;
+
+    --sidebar-background: 240 33% 6%;
+    --sidebar-foreground: 30 20% 70%;
+    --sidebar-primary: 356 56% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 25% 14%;
+    --sidebar-accent-foreground: 30 33% 90%;
+    --sidebar-border: 240 25% 16%;
+    --sidebar-ring: 356 56% 52%;
+
+    --chart-1: 356 56% 52%;
+    --chart-2: 41 72% 58%;
+    --chart-3: 140 25% 49%;
+    --chart-4: 214 32% 51%;
+    --chart-5: 280 45% 55%;
   }
 }
 
@@ -70,42 +120,44 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', Georgia, serif;
   }
 }
 
 @layer utilities {
+  .font-heading {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+  .font-body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
   .font-mono-data {
     font-family: 'JetBrains Mono', monospace;
   }
   .glow-primary {
-    box-shadow: var(--glow-primary);
+    box-shadow: 0 0 20px hsl(356 56% 52% / 0.2);
   }
   .glow-accent {
-    box-shadow: var(--glow-accent);
+    box-shadow: 0 0 20px hsl(41 72% 58% / 0.2);
   }
   .glass-card {
     @apply bg-card/80 backdrop-blur-sm border border-border/50;
   }
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(217 91% 60%), hsl(240 65% 55%));
+    background: linear-gradient(135deg, hsl(356 56% 52%), hsl(356 45% 42%));
   }
   .gradient-accent {
-    background: linear-gradient(135deg, hsl(160 84% 39%), hsl(170 70% 45%));
+    background: linear-gradient(135deg, hsl(41 72% 58%), hsl(41 60% 48%));
   }
-  .gradient-warning {
-    background: linear-gradient(135deg, hsl(38 92% 50%), hsl(25 90% 55%));
-  }
-  .text-gradient-primary {
-    background: linear-gradient(135deg, hsl(217 91% 60%), hsl(240 65% 65%));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .animate-pulse-slow {
-    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  .gradient-surface {
+    background: linear-gradient(180deg, hsl(30 33% 97%), hsl(30 20% 94%));
   }
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: hsl(222 30% 16%) transparent;
+    scrollbar-color: hsl(240 25% 20%) transparent;
   }
 }

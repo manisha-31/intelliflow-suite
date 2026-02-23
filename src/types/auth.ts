@@ -1,38 +1,75 @@
-export type UserRole = 'factory_admin' | 'designer' | 'marketing' | 'distributor';
+export type AppRole = 'admin' | 'marketing_manager' | 'designer' | 'factory' | 'distributor';
 
-export interface User {
+export interface UserProfile {
   id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  avatar?: string;
+  user_id: string;
+  full_name: string;
+  department: string | null;
+  avatar_url: string | null;
+  phone: string | null;
+  is_active: boolean;
+  created_at: string;
+  role: AppRole;
 }
 
-export const ROLE_LABELS: Record<UserRole, string> = {
-  factory_admin: 'Factory Admin',
+export const ROLE_LABELS: Record<AppRole, string> = {
+  admin: 'Admin',
+  marketing_manager: 'Marketing Manager',
   designer: 'Designer',
-  marketing: 'Marketing Team',
+  factory: 'Factory Unit',
   distributor: 'Distributor',
 };
 
-export const ROLE_COLORS: Record<UserRole, string> = {
-  factory_admin: 'bg-primary text-primary-foreground',
-  designer: 'bg-accent text-accent-foreground',
-  marketing: 'bg-warning text-warning-foreground',
-  distributor: 'bg-info text-info-foreground',
+export const ROLE_COLORS: Record<AppRole, string> = {
+  admin: 'bg-primary text-primary-foreground',
+  marketing_manager: 'bg-accent text-accent-foreground',
+  designer: 'bg-info text-info-foreground',
+  factory: 'bg-success text-success-foreground',
+  distributor: 'bg-warning text-warning-foreground',
 };
 
-export const MOCK_USERS: User[] = [
-  { id: '1', name: 'Rajesh Kumar', email: 'rajesh@nexgen.com', role: 'factory_admin' },
-  { id: '2', name: 'Priya Sharma', email: 'priya@nexgen.com', role: 'designer' },
-  { id: '3', name: 'Amit Patel', email: 'amit@nexgen.com', role: 'marketing' },
-  { id: '4', name: 'Suresh Mehta', email: 'suresh@nexgen.com', role: 'distributor' },
-];
+export const ROLE_DEFAULT_ROUTE: Record<AppRole, string> = {
+  admin: '/admin/dashboard',
+  marketing_manager: '/marketing/dashboard',
+  designer: '/designer/workspace',
+  factory: '/factory/production',
+  distributor: '/distributor/orders',
+};
 
-/** Which nav routes each role can access */
-export const ROLE_NAV_ACCESS: Record<UserRole, string[]> = {
-  factory_admin: ['/dashboard', '/orders', '/designs', '/inventory', '/production', '/reports', '/ai-analytics'],
-  designer: ['/designs'],
-  marketing: ['/dashboard', '/orders', '/reports', '/ai-analytics'],
-  distributor: ['/orders', '/inventory'],
+export interface NavItem {
+  to: string;
+  label: string;
+  icon: string; // lucide icon name
+}
+
+export const ROLE_NAV_ITEMS: Record<AppRole, NavItem[]> = {
+  admin: [
+    { to: '/admin/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
+    { to: '/collections', label: 'Collections', icon: 'FolderOpen' },
+    { to: '/approvals', label: 'Approvals', icon: 'CheckCircle' },
+    { to: '/production', label: 'Production', icon: 'Factory' },
+    { to: '/marketing/campaigns', label: 'Campaigns', icon: 'Megaphone' },
+    { to: '/admin/users', label: 'Users', icon: 'Users' },
+    { to: '/admin/analytics', label: 'Analytics', icon: 'BarChart3' },
+    { to: '/ai-insights', label: 'AI Insights', icon: 'Brain' },
+  ],
+  marketing_manager: [
+    { to: '/marketing/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
+    { to: '/collections', label: 'Collections', icon: 'FolderOpen' },
+    { to: '/approvals', label: 'Approvals', icon: 'CheckCircle' },
+    { to: '/marketing/campaigns', label: 'Campaigns', icon: 'Megaphone' },
+    { to: '/ai-insights', label: 'AI Insights', icon: 'Brain' },
+  ],
+  designer: [
+    { to: '/designer/workspace', label: 'My Designs', icon: 'Palette' },
+    { to: '/collections', label: 'Collections', icon: 'FolderOpen' },
+  ],
+  factory: [
+    { to: '/factory/production', label: 'Production', icon: 'Factory' },
+    { to: '/collections', label: 'Collections', icon: 'FolderOpen' },
+  ],
+  distributor: [
+    { to: '/distributor/orders', label: 'My Orders', icon: 'ShoppingCart' },
+    { to: '/collections', label: 'Collections', icon: 'FolderOpen' },
+  ],
 };
