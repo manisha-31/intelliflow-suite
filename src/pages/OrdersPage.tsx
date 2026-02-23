@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
 import AppHeader from '@/components/layout/AppHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
-import { orders } from '@/data/mockData';
-import { Search, Filter, Download } from 'lucide-react';
+import { orders as mockOrders } from '@/data/mockData';
+import { Download } from 'lucide-react';
+import AddOrderDialog from '@/components/orders/AddOrderDialog';
+import { useAuth } from '@/contexts/AuthContext';
 
 const OrdersPage: React.FC = () => {
+  const { user } = useAuth();
+  const [orderList, setOrderList] = useState(mockOrders);
   const [filter, setFilter] = useState('all');
   const statuses = ['all', 'pending', 'confirmed', 'processing', 'shipped', 'delivered'];
-  const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
+  const filtered = filter === 'all' ? orderList : orderList.filter(o => o.status === filter);
+
+  const canAddOrder = user?.role === 'factory_admin' || user?.role === 'marketing';
+
+  const handleAddOrder = (order: typeof orderList[0]) => {
+    setOrderList(prev => [order, ...prev]);
+  };
 
   return (
     <>
@@ -29,6 +39,9 @@ const OrdersPage: React.FC = () => {
             ))}
           </div>
           <div className="flex items-center gap-2">
+            {canAddOrder && (
+              <AddOrderDialog onAdd={handleAddOrder} orderCount={orderList.length} />
+            )}
             <button className="p-2 rounded-lg bg-secondary/50 text-muted-foreground hover:text-foreground">
               <Download className="w-4 h-4" />
             </button>
