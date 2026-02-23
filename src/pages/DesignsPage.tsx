@@ -4,6 +4,7 @@ import StatusBadge from '@/components/shared/StatusBadge';
 import { designs } from '@/data/mockData';
 import { MessageSquare, Eye } from 'lucide-react';
 import DesignChatPanel from '@/components/designs/DesignChatPanel';
+import SampleTracker, { type SampleStatus } from '@/components/designs/SampleTracker';
 
 import designSummerBreeze from '@/assets/design-summer-breeze.jpg';
 import designArcticThermals from '@/assets/design-arctic-thermals.jpg';
@@ -23,6 +24,18 @@ const DESIGN_IMAGES: Record<string, string> = {
 
 const DesignsPage: React.FC = () => {
   const [activeChat, setActiveChat] = useState<{ id: string; name: string } | null>(null);
+  const [sampleStatuses, setSampleStatuses] = useState<Record<string, SampleStatus>>({
+    'DSN-001': 'approved',
+    'DSN-002': 'sent',
+    'DSN-003': 'received',
+    'DSN-004': 'not_sent',
+    'DSN-005': 'rejected',
+    'DSN-006': 'approved',
+  });
+
+  const handleSampleAdvance = (designId: string, newStatus: SampleStatus) => {
+    setSampleStatuses(prev => ({ ...prev, [designId]: newStatus }));
+  };
 
   return (
     <>
@@ -61,6 +74,10 @@ const DesignsPage: React.FC = () => {
                     </button>
                   </div>
                 </div>
+                <SampleTracker
+                  status={sampleStatuses[design.id] || 'not_sent'}
+                  onAdvance={(newStatus) => handleSampleAdvance(design.id, newStatus)}
+                />
               </div>
             ))}
           </div>
