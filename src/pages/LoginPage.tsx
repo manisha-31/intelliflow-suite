@@ -1,104 +1,75 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { MOCK_USERS, ROLE_LABELS, ROLE_COLORS } from '@/types/auth';
+import { ROLE_DEFAULT_ROUTE } from '@/types/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Lock, Mail, Cpu, ChevronRight } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
-  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { login, profile } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    const ok = await login(email, password);
-    if (!ok) setError('Invalid credentials. Use one of the demo accounts below.');
+    const { error } = await login(email, password);
     setLoading(false);
+    if (error) {
+      toast({ title: 'Login failed', description: error, variant: 'destructive' });
+    }
   };
 
-  const quickLogin = async (userEmail: string) => {
-    setLoading(true);
-    await login(userEmail, 'demo');
-    setLoading(false);
-  };
+  React.useEffect(() => {
+    if (profile) {
+      navigate(ROLE_DEFAULT_ROUTE[profile.role], { replace: true });
+    }
+  }, [profile, navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
-      {/* Background grid effect */}
-      <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: 'linear-gradient(hsl(217 91% 60% / 0.3) 1px, transparent 1px), linear-gradient(90deg, hsl(217 91% 60% / 0.3) 1px, transparent 1px)',
-        backgroundSize: '60px 60px'
-      }} />
-      
-      <div className="w-full max-w-md mx-auto animate-slide-in relative z-10">
-        {/* Logo/Brand */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl gradient-primary glow-primary mb-4">
-            <Cpu className="w-8 h-8 text-primary-foreground" />
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md space-y-8">
+        <div className="text-center space-y-2">
+          <div className="w-14 h-14 rounded-2xl gradient-primary mx-auto flex items-center justify-center glow-primary">
+            <span className="text-2xl font-bold text-primary-foreground font-heading">IF</span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">NEXT-GEN</h1>
-          <p className="text-sm text-muted-foreground mt-1">Intelligent Business Platform</p>
+          <h1 className="text-3xl font-bold font-heading text-foreground">Welcome to IntelliFlow</h1>
+          <p className="text-muted-foreground font-body">Intelligent Collaboration for Fashion</p>
         </div>
 
-        {/* Login Form */}
-        <div className="glass-card rounded-xl p-6 mb-4">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="email"
-                placeholder="Email address"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="pl-10 bg-secondary/50 border-border"
-              />
-            </div>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="pl-10 bg-secondary/50 border-border"
-              />
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" disabled={loading} className="w-full gradient-primary text-primary-foreground font-semibold">
-              {loading ? 'Signing in...' : 'Sign In'}
-            </Button>
-          </form>
-        </div>
-
-        {/* Quick Access */}
-        <div className="glass-card rounded-xl p-4">
-          <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider font-medium">Quick Access — Demo Accounts</p>
-          <div className="space-y-2">
-            {MOCK_USERS.map(u => (
-              <button
-                key={u.id}
-                onClick={() => quickLogin(u.email)}
-                className="w-full flex items-center justify-between p-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/60 transition-colors group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center text-xs font-bold text-primary-foreground">
-                    {u.name.charAt(0)}
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-foreground">{u.name}</p>
-                    <p className="text-xs text-muted-foreground">{ROLE_LABELS[u.role]}</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-              </button>
-            ))}
-          </div>
-        </div>
+        <Card className="border-border/50 shadow-lg">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-heading">Sign In</CardTitle>
+            <CardDescription>Enter your credentials to access your dashboard</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" placeholder="you@company.com" value={email} onChange={e => setEmail(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                Sign In
+              </Button>
+            </form>
+            <p className="text-center text-sm text-muted-foreground mt-4">
+              Don't have an account?{' '}
+              <Link to="/signup" className="text-primary hover:underline font-medium">Sign up</Link>
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
