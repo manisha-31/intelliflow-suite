@@ -277,6 +277,7 @@ export type Database = {
       }
       designs: {
         Row: {
+          ai_prompt: string | null
           approval_status: string | null
           approved_at: string | null
           category: string | null
@@ -286,6 +287,7 @@ export type Database = {
           designer_id: string | null
           file_url: string | null
           id: string
+          is_ai_generated: boolean | null
           product_copy: Json | null
           rejection_reason: string | null
           sku_code: string | null
@@ -297,6 +299,7 @@ export type Database = {
           website_sync_status: string | null
         }
         Insert: {
+          ai_prompt?: string | null
           approval_status?: string | null
           approved_at?: string | null
           category?: string | null
@@ -306,6 +309,7 @@ export type Database = {
           designer_id?: string | null
           file_url?: string | null
           id?: string
+          is_ai_generated?: boolean | null
           product_copy?: Json | null
           rejection_reason?: string | null
           sku_code?: string | null
@@ -317,6 +321,7 @@ export type Database = {
           website_sync_status?: string | null
         }
         Update: {
+          ai_prompt?: string | null
           approval_status?: string | null
           approved_at?: string | null
           category?: string | null
@@ -326,6 +331,7 @@ export type Database = {
           designer_id?: string | null
           file_url?: string | null
           id?: string
+          is_ai_generated?: boolean | null
           product_copy?: Json | null
           rejection_reason?: string | null
           sku_code?: string | null
