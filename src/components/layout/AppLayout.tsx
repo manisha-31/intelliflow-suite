@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import AppSidebar from './AppSidebar';
 import AppHeader from './AppHeader';
+import AIChatbot from '@/components/chat/AIChatbot';
 
 const AppLayout: React.FC = () => {
   return (
@@ -13,6 +14,7 @@ const AppLayout: React.FC = () => {
           <Outlet />
         </main>
       </div>
+      <AIChatbot />
     </div>
   );
 };
