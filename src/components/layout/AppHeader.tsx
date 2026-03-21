@@ -1,8 +1,8 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
-import { Bell, Search } from 'lucide-react';
-import { ROLE_LABELS } from '@/types/auth';
+import { Search } from 'lucide-react';
+import NotificationBell from '@/components/notifications/NotificationBell';
 
 const ROUTE_TITLES: Record<string, { title: string; subtitle?: string }> = {
   '/admin/dashboard': { title: 'Admin Dashboard', subtitle: 'Overview of all operations' },
@@ -20,7 +20,6 @@ const ROUTE_TITLES: Record<string, { title: string; subtitle?: string }> = {
 };
 
 const AppHeader: React.FC = () => {
-  const { profile } = useAuth();
   const location = useLocation();
   const routeInfo = ROUTE_TITLES[location.pathname] || { title: 'IntelliFlow Suite' };
 
@@ -33,15 +32,9 @@ const AppHeader: React.FC = () => {
       <div className="flex items-center gap-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            placeholder="Search..."
-            className="pl-9 pr-4 py-2 text-sm bg-muted/50 border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary w-56 font-body"
-          />
+          <input placeholder="Search..." className="pl-9 pr-4 py-2 text-sm bg-muted/50 border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary w-56 font-body" />
         </div>
-        <button className="relative p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />
-        </button>
+        <NotificationBell />
       </div>
     </header>
   );
