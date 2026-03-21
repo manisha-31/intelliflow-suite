@@ -1,51 +1,44 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
-} from 'recharts';
-import { Factory, Package, AlertTriangle, CheckCircle, Clock, Truck } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Factory, Package, AlertTriangle, CheckCircle, Clock, Loader2 } from 'lucide-react';
+import { useProductionOrders, useUpdateProductionOrder } from '@/hooks/useProductionOrders';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
-const productionOrders = [
-  { id: 'PO-2851', design: 'Arctic Thermals Pro V3', qty: 5000, stage: 'Sewing', progress: 62, priority: 'High', due: 'Feb 28' },
-  { id: 'PO-2849', design: 'Eco Comfort Brief', qty: 8000, stage: 'Cutting', progress: 35, priority: 'Medium', due: 'Mar 05' },
-  { id: 'PO-2847', design: 'Heritage Classic Vest', qty: 3000, stage: 'Finishing', progress: 88, priority: 'High', due: 'Feb 25' },
-  { id: 'PO-2845', design: 'Sport Flex Socks', qty: 12000, stage: 'Dispatch', progress: 95, priority: 'Low', due: 'Feb 24' },
-  { id: 'PO-2843', design: 'Summer Breeze Camisole', qty: 4000, stage: 'Cutting', progress: 15, priority: 'Medium', due: 'Mar 12' },
-];
-
-const weeklyOutput = [
-  { day: 'Mon', units: 820 },
-  { day: 'Tue', units: 940 },
-  { day: 'Wed', units: 1100 },
-  { day: 'Thu', units: 980 },
-  { day: 'Fri', units: 1050 },
-  { day: 'Sat', units: 650 },
-];
-
-const bomAlerts = [
-  { material: 'Cotton Yarn 40s', available: 120, required: 300, supplier: 'Vardhman Textiles' },
-  { material: 'Elastic Band 25mm', available: 50, required: 180, supplier: 'Sri Lakshmi Elastics' },
-  { material: 'Polyester Thread', available: 400, required: 450, supplier: 'Coats India' },
-];
-
-const priorityColor: Record<string, string> = {
-  High: 'bg-destructive text-destructive-foreground',
-  Medium: 'bg-warning text-warning-foreground',
-  Low: 'bg-muted text-muted-foreground',
-};
+const STAGES = ['material_sourcing', 'cutting', 'sewing', 'finishing', 'qc', 'dispatch', 'completed'];
+const stageLabel: Record<string, string> = { material_sourcing: 'Material Sourcing', cutting: 'Cutting', sewing: 'Sewing', finishing: 'Finishing', qc: 'QC', dispatch: 'Dispatch', completed: 'Completed' };
+const priorityColor: Record<string, string> = { high: 'bg-destructive text-destructive-foreground', medium: 'bg-warning text-warning-foreground', low: 'bg-muted text-muted-foreground' };
 
 const FactoryProduction: React.FC = () => {
+  const { profile } = useAuth();
+  const { data: orders = [], isLoading } = useProductionOrders(profile?.role === 'factory' ? profile.id : undefined);
+  const updateMut = useUpdateProductionOrder();
+
+  const handleStageChange = async (orderId: string, newStage: string) => {
+    const stageIdx = STAGES.indexOf(newStage);
+    const pct = Math.round((stageIdx / (STAGES.length - 1)) * 100);
+    try {
+      await updateMut.mutateAsync({ id: orderId, current_stage: newStage, completion_percentage: pct });
+      toast({ title: `Stage updated to ${stageLabel[newStage]}` });
+    } catch (e: any) { toast({ title: 'Error', description: e.message, variant: 'destructive' }); }
+  };
+
+  if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+
+  const delayed = orders.filter((o: any) => o.delay_flag);
+
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* KPI Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { icon: Factory, label: 'Active Orders', value: '5', sub: '28,000 total units' },
-          { icon: CheckCircle, label: 'Completed Today', value: '1,050', sub: 'Units produced' },
-          { icon: Clock, label: 'Avg Lead Time', value: '12 days', sub: 'From cutting to dispatch' },
-          { icon: AlertTriangle, label: 'Delayed Orders', value: '2', sub: 'Needs escalation' },
+          { icon: Factory, label: 'Active Orders', value: orders.length.toString(), sub: `${orders.reduce((s: number, o: any) => s + (o.quantity || 0), 0).toLocaleString()} total units` },
+          { icon: CheckCircle, label: 'Completed', value: orders.filter((o: any) => o.current_stage === 'completed').length.toString(), sub: 'Finished orders' },
+          { icon: Clock, label: 'In Progress', value: orders.filter((o: any) => o.current_stage !== 'completed').length.toString(), sub: 'Active production' },
+          { icon: AlertTriangle, label: 'Delayed', value: delayed.length.toString(), sub: 'Needs escalation' },
         ].map(kpi => (
           <Card key={kpi.label}>
             <CardContent className="pt-5 pb-4">
@@ -55,36 +48,35 @@ const FactoryProduction: React.FC = () => {
                   <p className="text-2xl font-bold font-heading text-foreground mt-1">{kpi.value}</p>
                   <p className="text-xs text-muted-foreground font-body">{kpi.sub}</p>
                 </div>
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <kpi.icon className="w-4 h-4 text-primary" />
-                </div>
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center"><kpi.icon className="w-4 h-4 text-primary" /></div>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Production Orders Table */}
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-heading">Production Orders</CardTitle>
-        </CardHeader>
+        <CardHeader className="pb-2"><CardTitle className="text-sm font-heading">Production Orders</CardTitle></CardHeader>
         <CardContent>
+          {orders.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No production orders assigned.</p>}
           <div className="space-y-3">
-            {productionOrders.map(o => (
+            {orders.map((o: any) => (
               <div key={o.id} className="flex items-center gap-4 p-3 rounded-lg bg-muted/40">
-                <div className="w-16 text-xs font-mono-data text-primary font-semibold">{o.id}</div>
+                <div className="w-20 text-xs font-mono-data text-primary font-semibold">{o.order_number || o.id.slice(0, 8)}</div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground font-body truncate">{o.design}</p>
-                  <p className="text-xs text-muted-foreground font-body">{o.qty.toLocaleString()} units · Due: {o.due}</p>
+                  <p className="text-sm font-semibold text-foreground font-body truncate">{o.designs?.title || 'Unknown Design'}</p>
+                  <p className="text-xs text-muted-foreground font-body">{(o.quantity || 0).toLocaleString()} units · Due: {o.due_date || 'N/A'}</p>
                 </div>
-                <Badge className={`text-[10px] ${priorityColor[o.priority]}`}>{o.priority}</Badge>
-                <div className="w-28 space-y-1">
-                  <div className="flex items-center justify-between text-[10px] font-body text-muted-foreground">
-                    <span>{o.stage}</span>
-                    <span className="font-mono-data">{o.progress}%</span>
-                  </div>
-                  <Progress value={o.progress} className="h-1.5" />
+                <Badge className={`text-[10px] ${priorityColor[o.priority || 'medium']}`}>{o.priority || 'medium'}</Badge>
+                <Select value={o.current_stage || 'material_sourcing'} onValueChange={v => handleStageChange(o.id, v)}>
+                  <SelectTrigger className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {STAGES.map(s => <SelectItem key={s} value={s}>{stageLabel[s]}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <div className="w-20 space-y-1">
+                  <span className="text-xs font-mono-data text-foreground">{o.completion_percentage || 0}%</span>
+                  <Progress value={o.completion_percentage || 0} className="h-1.5" />
                 </div>
               </div>
             ))}
@@ -92,47 +84,24 @@ const FactoryProduction: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Weekly Output + BOM Alerts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+      {delayed.length > 0 && (
+        <Card className="border-destructive/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-heading">Weekly Output (Units)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[200px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weeklyOutput}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 18%, 18%)" />
-                  <XAxis dataKey="day" stroke="hsl(0, 0%, 55%)" fontSize={11} />
-                  <YAxis stroke="hsl(0, 0%, 55%)" fontSize={11} />
-                  <Tooltip contentStyle={{ background: 'hsl(220, 22%, 10%)', border: '1px solid hsl(220, 18%, 18%)', borderRadius: '8px', color: '#fff', fontSize: 12 }} />
-                  <Bar dataKey="units" fill="hsl(355, 75%, 47%)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-heading">BOM Alerts — Low Stock</CardTitle>
+            <CardTitle className="text-sm font-heading flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-destructive" /> Delayed Orders</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {bomAlerts.map(b => (
-              <div key={b.material} className="p-3 rounded-lg bg-destructive/5 border border-destructive/20 space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold text-foreground font-body">{b.material}</p>
-                  <AlertTriangle className="w-4 h-4 text-destructive" />
+            {delayed.map((o: any) => (
+              <div key={o.id} className="flex items-center gap-4 p-3 rounded-lg bg-destructive/5 border border-destructive/15">
+                <span className="text-xs font-mono-data text-primary font-semibold w-20">{o.order_number || o.id.slice(0, 8)}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground font-body">{o.designs?.title}</p>
+                  <p className="text-xs text-muted-foreground font-body">Reason: {o.delay_reason || 'Not specified'}</p>
                 </div>
-                <p className="text-xs text-muted-foreground font-body">
-                  {b.available} / {b.required} kg available · Supplier: {b.supplier}
-                </p>
-                <Progress value={(b.available / b.required) * 100} className="h-1.5" />
               </div>
             ))}
           </CardContent>
         </Card>
-      </div>
+      )}
     </div>
   );
 };

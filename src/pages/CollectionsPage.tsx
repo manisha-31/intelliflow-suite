@@ -1,36 +1,60 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
-import { FolderOpen, Search, Plus, Calendar, Palette, Package, TrendingUp } from 'lucide-react';
-
-const collections = [
-  { name: 'Winter Thermals 2026', season: 'Winter', year: 2026, status: 'In Production', designs: 14, approved: 12, progress: 72, launch: 'Nov 15, 2025', desc: 'Premium thermal innerwear for extreme cold comfort' },
-  { name: 'Summer Breeze Collection', season: 'Summer', year: 2026, status: 'Design Phase', designs: 18, approved: 6, progress: 35, launch: 'Apr 01, 2026', desc: 'Lightweight breathable essentials for summer' },
-  { name: 'Heritage Classics', season: 'All Season', year: 2026, status: 'Launched', designs: 10, approved: 10, progress: 100, launch: 'Jan 10, 2026', desc: 'Timeless innerwear inspired by 40 years of legacy' },
-  { name: 'Monsoon Essentials', season: 'Monsoon', year: 2026, status: 'Planning', designs: 8, approved: 0, progress: 10, launch: 'Jun 01, 2026', desc: 'Quick-dry, antimicrobial range for the rainy season' },
-  { name: 'Kids Comfort Range', season: 'All Season', year: 2026, status: 'Design Phase', designs: 12, approved: 3, progress: 25, launch: 'Apr 20, 2026', desc: 'Soft, durable innerwear designed for children' },
-  { name: 'Active Sport Line', season: 'All Season', year: 2026, status: 'In Production', designs: 9, approved: 9, progress: 60, launch: 'Mar 15, 2026', desc: 'Performance-driven athletic innerwear & socks' },
-  { name: 'Festive Luxe 2025', season: 'Winter', year: 2025, status: 'Launched', designs: 7, approved: 7, progress: 100, launch: 'Oct 01, 2025', desc: 'Premium gift-ready innerwear for the festive season' },
-  { name: 'Eco Conscious Range', season: 'All Season', year: 2026, status: 'Planning', designs: 5, approved: 0, progress: 8, launch: 'Jul 15, 2026', desc: 'Sustainable fabrics and responsible production' },
-];
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { FolderOpen, Search, Plus, Calendar, Palette, Package, TrendingUp, Loader2, Trash2 } from 'lucide-react';
+import { useCollections, useCreateCollection, useDeleteCollection } from '@/hooks/useCollections';
+import { useDesigns } from '@/hooks/useDesigns';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
 const statusColor: Record<string, string> = {
-  Launched: 'bg-success text-success-foreground',
-  'In Production': 'bg-info text-info-foreground',
-  'Design Phase': 'bg-warning text-warning-foreground',
-  Planning: 'bg-muted text-muted-foreground',
+  launched: 'bg-success text-success-foreground',
+  in_production: 'bg-info text-info-foreground',
+  design_phase: 'bg-warning text-warning-foreground',
+  planning: 'bg-muted text-muted-foreground',
+};
+const statusLabel: Record<string, string> = {
+  launched: 'Launched', in_production: 'In Production', design_phase: 'Design Phase', planning: 'Planning',
 };
 
 const CollectionsPage: React.FC = () => {
   const [search, setSearch] = useState('');
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ name: '', season: '', year: new Date().getFullYear(), description: '', status: 'planning', target_launch_date: '' });
+  const { profile } = useAuth();
+  const { data: collections = [], isLoading } = useCollections();
+  const { data: designs = [] } = useDesigns();
+  const createMut = useCreateCollection();
+  const deleteMut = useDeleteCollection();
+
   const filtered = collections.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+
+  const designCounts = (collId: string) => {
+    const d = designs.filter((x: any) => x.collection_id === collId);
+    return { total: d.length, approved: d.filter((x: any) => x.approval_status === 'approved').length };
+  };
+
+  const handleCreate = async () => {
+    if (!form.name.trim()) return toast({ title: 'Name required', variant: 'destructive' });
+    try {
+      await createMut.mutateAsync({ ...form, year: form.year, created_by: profile?.id });
+      setOpen(false);
+      setForm({ name: '', season: '', year: new Date().getFullYear(), description: '', status: 'planning', target_launch_date: '' });
+      toast({ title: 'Collection created!' });
+    } catch (e: any) { toast({ title: 'Error', description: e.message, variant: 'destructive' }); }
+  };
+
+  if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h3 className="text-lg font-heading text-foreground">Collections</h3>
@@ -41,23 +65,44 @@ const CollectionsPage: React.FC = () => {
             <Search className="w-4 h-4 absolute left-2.5 top-2.5 text-muted-foreground" />
             <Input placeholder="Search collections..." className="pl-8 h-9 w-52 text-sm" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
-          <Button size="sm" className="gap-1.5"><Plus className="w-4 h-4" /> New Collection</Button>
+          {(profile?.role === 'admin' || profile?.role === 'marketing_manager') && (
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild><Button size="sm" className="gap-1.5"><Plus className="w-4 h-4" /> New Collection</Button></DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>Create Collection</DialogTitle></DialogHeader>
+                <div className="space-y-3">
+                  <div><Label>Name *</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Winter Thermals 2026" /></div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label>Season</Label>
+                      <Select value={form.season} onValueChange={v => setForm(f => ({ ...f, season: v }))}>
+                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectContent>
+                          {['Winter', 'Summer', 'Monsoon', 'All Season'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div><Label>Year</Label><Input type="number" value={form.year} onChange={e => setForm(f => ({ ...f, year: +e.target.value }))} /></div>
+                  </div>
+                  <div><Label>Description</Label><Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Brief description..." /></div>
+                  <div><Label>Target Launch Date</Label><Input type="date" value={form.target_launch_date} onChange={e => setForm(f => ({ ...f, target_launch_date: e.target.value }))} /></div>
+                  <Button onClick={handleCreate} disabled={createMut.isPending} className="w-full">{createMut.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create Collection'}</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
 
-      {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { icon: FolderOpen, label: 'Total Collections', value: '8' },
-          { icon: Palette, label: 'Total Designs', value: '83' },
-          { icon: Package, label: 'In Production', value: '2' },
-          { icon: TrendingUp, label: 'Launched', value: '2' },
+          { icon: FolderOpen, label: 'Total Collections', value: collections.length.toString() },
+          { icon: Palette, label: 'Total Designs', value: designs.length.toString() },
+          { icon: Package, label: 'In Production', value: collections.filter(c => c.status === 'in_production').length.toString() },
+          { icon: TrendingUp, label: 'Launched', value: collections.filter(c => c.status === 'launched').length.toString() },
         ].map(k => (
           <Card key={k.label}>
             <CardContent className="pt-4 pb-3 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                <k.icon className="w-4 h-4 text-primary" />
-              </div>
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center"><k.icon className="w-4 h-4 text-primary" /></div>
               <div>
                 <p className="text-xs text-muted-foreground font-body">{k.label}</p>
                 <p className="text-lg font-bold font-heading text-foreground">{k.value}</p>
@@ -67,30 +112,39 @@ const CollectionsPage: React.FC = () => {
         ))}
       </div>
 
-      {/* Collection Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filtered.map(c => (
-          <Card key={c.name} className="hover:border-primary/40 transition-colors cursor-pointer">
-            <CardContent className="pt-5 pb-4 space-y-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground font-body">{c.name}</h4>
-                  <p className="text-xs text-muted-foreground font-body mt-0.5">{c.desc}</p>
+        {filtered.length === 0 && <p className="text-sm text-muted-foreground font-body col-span-2 text-center py-8">No collections found. Create one to get started!</p>}
+        {filtered.map(c => {
+          const dc = designCounts(c.id);
+          const progress = dc.total > 0 ? Math.round((dc.approved / dc.total) * 100) : 0;
+          return (
+            <Card key={c.id} className="hover:border-primary/40 transition-colors cursor-pointer">
+              <CardContent className="pt-5 pb-4 space-y-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground font-body">{c.name}</h4>
+                    <p className="text-xs text-muted-foreground font-body mt-0.5">{c.description || 'No description'}</p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Badge className={`text-[10px] shrink-0 ${statusColor[c.status || 'planning']}`}>{statusLabel[c.status || 'planning']}</Badge>
+                    {profile?.role === 'admin' && (
+                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => { deleteMut.mutate(c.id); toast({ title: 'Deleted' }); }}><Trash2 className="w-3 h-3 text-destructive" /></Button>
+                    )}
+                  </div>
                 </div>
-                <Badge className={`text-[10px] shrink-0 ${statusColor[c.status]}`}>{c.status}</Badge>
-              </div>
-              <div className="flex items-center gap-4 text-xs text-muted-foreground font-body">
-                <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {c.launch}</span>
-                <span>{c.season} {c.year}</span>
-              </div>
-              <div className="flex items-center gap-4 text-xs font-body">
-                <span className="text-muted-foreground">{c.approved}/{c.designs} designs approved</span>
-                <span className="ml-auto font-mono-data text-foreground">{c.progress}%</span>
-              </div>
-              <Progress value={c.progress} className="h-1.5" />
-            </CardContent>
-          </Card>
-        ))}
+                <div className="flex items-center gap-4 text-xs text-muted-foreground font-body">
+                  <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {c.target_launch_date || 'No date'}</span>
+                  <span>{c.season} {c.year}</span>
+                </div>
+                <div className="flex items-center gap-4 text-xs font-body">
+                  <span className="text-muted-foreground">{dc.approved}/{dc.total} designs approved</span>
+                  <span className="ml-auto font-mono-data text-foreground">{progress}%</span>
+                </div>
+                <Progress value={progress} className="h-1.5" />
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
