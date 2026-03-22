@@ -14,6 +14,8 @@ import { useCollections } from '@/hooks/useCollections';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import DesignerAIAssistant from '@/components/designer/DesignerAIAssistant';
+import ProductViewer3D from '@/components/designer/ProductViewer3D';
 
 const statusColor: Record<string, string> = {
   approved: 'bg-success text-success-foreground',
@@ -193,37 +195,50 @@ const DesignerWorkspace: React.FC = () => {
         </Dialog>
       </div>
 
-      {/* Design Grid */}
-      <div>
-        <h3 className="text-sm font-heading text-foreground mb-4">My Designs</h3>
-        {designs.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No designs yet. Upload or generate your first design!</p>}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {designs.map((d: any) => (
-            <Card key={d.id} className="overflow-hidden group cursor-pointer hover:border-primary/50 transition-colors">
-              <div className="aspect-[4/3] relative overflow-hidden bg-muted">
-                {d.thumbnail_url ? (
-                  <img src={d.thumbnail_url} alt={d.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">No image</div>
-                )}
-                <Badge className={`absolute top-2 right-2 text-[10px] ${statusColor[d.approval_status || 'draft']}`}>
-                  {(d.approval_status || 'draft').replace('_', ' ')}
-                </Badge>
-              </div>
-              <CardContent className="pt-3 pb-3">
-                <p className="text-sm font-semibold text-foreground font-body">{d.title}</p>
-                <div className="flex items-center justify-between mt-1">
-                  <p className="text-xs text-muted-foreground font-body">{d.collections?.name || 'No collection'}</p>
-                  <span className="text-xs text-muted-foreground font-mono-data">v{d.version_number}</span>
+      {/* AI Assistant + Design Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Design Grid */}
+        <div className="lg:col-span-2">
+          <h3 className="text-sm font-heading text-foreground mb-4">My Designs</h3>
+          {designs.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No designs yet. Upload or generate your first design!</p>}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {designs.map((d: any) => (
+              <Card key={d.id} className="overflow-hidden group cursor-pointer hover:border-primary/50 transition-colors">
+                <div className="aspect-[4/3] relative overflow-hidden bg-muted">
+                  {d.thumbnail_url ? (
+                    <img src={d.thumbnail_url} alt={d.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">No image</div>
+                  )}
+                  <Badge className={`absolute top-2 right-2 text-[10px] ${statusColor[d.approval_status || 'draft']}`}>
+                    {(d.approval_status || 'draft').replace('_', ' ')}
+                  </Badge>
                 </div>
-                {d.approval_status === 'draft' && (
-                  <Button size="sm" variant="outline" className="mt-2 w-full text-xs gap-1" onClick={() => handleSubmitForReview(d.id)}>
-                    <Send className="w-3 h-3" /> Submit for Review
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                <CardContent className="pt-3 pb-3">
+                  <p className="text-sm font-semibold text-foreground font-body">{d.title}</p>
+                  <div className="flex items-center justify-between mt-1">
+                    <p className="text-xs text-muted-foreground font-body">{d.collections?.name || 'No collection'}</p>
+                    <span className="text-xs text-muted-foreground font-mono-data">v{d.version_number}</span>
+                  </div>
+                  <div className="flex gap-1.5 mt-2">
+                    {d.thumbnail_url && (
+                      <ProductViewer3D imageUrl={d.thumbnail_url} title={d.title} />
+                    )}
+                    {d.approval_status === 'draft' && (
+                      <Button size="sm" variant="outline" className="flex-1 text-xs gap-1" onClick={() => handleSubmitForReview(d.id)}>
+                        <Send className="w-3 h-3" /> Submit for Review
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* AI Assistant Panel */}
+        <div className="lg:col-span-1">
+          <DesignerAIAssistant />
         </div>
       </div>
     </div>
