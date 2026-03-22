@@ -14,6 +14,7 @@ import { useCollections } from '@/hooks/useCollections';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { demoDesigns } from '@/data/demoData';
 import DesignerAIAssistant from '@/components/designer/DesignerAIAssistant';
 import ProductViewer3D from '@/components/designer/ProductViewer3D';
 
