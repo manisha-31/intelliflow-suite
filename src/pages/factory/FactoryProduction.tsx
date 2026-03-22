@@ -8,6 +8,7 @@ import { Factory, Package, AlertTriangle, CheckCircle, Clock, Loader2 } from 'lu
 import { useProductionOrders, useUpdateProductionOrder } from '@/hooks/useProductionOrders';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { demoProductionOrders } from '@/data/demoData';
 
 const STAGES = ['material_sourcing', 'cutting', 'sewing', 'finishing', 'qc', 'dispatch', 'completed'];
 const stageLabel: Record<string, string> = { material_sourcing: 'Material Sourcing', cutting: 'Cutting', sewing: 'Sewing', finishing: 'Finishing', qc: 'QC', dispatch: 'Dispatch', completed: 'Completed' };
@@ -15,10 +16,14 @@ const priorityColor: Record<string, string> = { high: 'bg-destructive text-destr
 
 const FactoryProduction: React.FC = () => {
   const { profile } = useAuth();
-  const { data: orders = [], isLoading } = useProductionOrders(profile?.role === 'factory' ? profile.id : undefined);
+  const { data: dbOrders = [], isLoading } = useProductionOrders(profile?.role === 'factory' ? profile.id : undefined);
   const updateMut = useUpdateProductionOrder();
 
+  const isDemo = dbOrders.length === 0;
+  const orders = isDemo ? demoProductionOrders : dbOrders;
+
   const handleStageChange = async (orderId: string, newStage: string) => {
+    if (isDemo) return toast({ title: 'Demo mode — real production orders required' });
     const stageIdx = STAGES.indexOf(newStage);
     const pct = Math.round((stageIdx / (STAGES.length - 1)) * 100);
     try {
@@ -33,6 +38,11 @@ const FactoryProduction: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {isDemo && (
+        <div className="bg-primary/5 border border-primary/20 rounded-lg px-4 py-2.5 text-xs text-muted-foreground font-body">
+          📊 Showing demo data. Create production orders to see real data.
+        </div>
+      )}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { icon: Factory, label: 'Active Orders', value: orders.length.toString(), sub: `${orders.reduce((s: number, o: any) => s + (o.quantity || 0), 0).toLocaleString()} total units` },

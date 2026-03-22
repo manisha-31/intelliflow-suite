@@ -14,6 +14,7 @@ import { useCampaigns, useCreateCampaign, useDeleteCampaign } from '@/hooks/useC
 import { useCollections } from '@/hooks/useCollections';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { demoCampaigns } from '@/data/demoData';
 
 const statusColor: Record<string, string> = {
   active: 'bg-success text-success-foreground',
@@ -26,12 +27,14 @@ const CampaignsPage: React.FC = () => {
   const [tab, setTab] = useState('all');
   const [open, setOpen] = useState(false);
   const { profile } = useAuth();
-  const { data: campaigns = [], isLoading } = useCampaigns();
+  const { data: dbCampaigns = [], isLoading } = useCampaigns();
   const { data: collections = [] } = useCollections();
   const createMut = useCreateCampaign();
   const deleteMut = useDeleteCampaign();
   const [form, setForm] = useState({ title: '', campaign_type: '', collection_id: '', budget: '', start_date: '', end_date: '', description: '' });
 
+  const isDemo = dbCampaigns.length === 0;
+  const campaigns = isDemo ? demoCampaigns : dbCampaigns;
   const filtered = tab === 'all' ? campaigns : campaigns.filter((c: any) => c.status === tab);
 
   const handleCreate = async () => {
@@ -60,6 +63,11 @@ const CampaignsPage: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {isDemo && (
+        <div className="bg-primary/5 border border-primary/20 rounded-lg px-4 py-2.5 text-xs text-muted-foreground font-body">
+          📊 Showing demo data. Create your first campaign to see real data.
+        </div>
+      )}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h3 className="text-lg font-heading text-foreground">Campaigns</h3>

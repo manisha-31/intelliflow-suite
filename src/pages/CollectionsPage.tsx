@@ -13,6 +13,7 @@ import { useCollections, useCreateCollection, useDeleteCollection } from '@/hook
 import { useDesigns } from '@/hooks/useDesigns';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { demoCollections, demoDesigns } from '@/data/demoData';
 
 const statusColor: Record<string, string> = {
   launched: 'bg-success text-success-foreground',
@@ -29,14 +30,22 @@ const CollectionsPage: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: '', season: '', year: new Date().getFullYear(), description: '', status: 'planning', target_launch_date: '' });
   const { profile } = useAuth();
-  const { data: collections = [], isLoading } = useCollections();
-  const { data: designs = [] } = useDesigns();
+  const { data: dbCollections = [], isLoading } = useCollections();
+  const { data: dbDesigns = [] } = useDesigns();
   const createMut = useCreateCollection();
   const deleteMut = useDeleteCollection();
 
-  const filtered = collections.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+  const isDemo = dbCollections.length === 0;
+  const collections = isDemo ? demoCollections : dbCollections;
+  const designs = isDemo ? demoDesigns : dbDesigns;
+
+  const filtered = collections.filter((c: any) => c.name.toLowerCase().includes(search.toLowerCase()));
 
   const designCounts = (collId: string) => {
+    if (isDemo) {
+      const dc = demoCollections.find(c => c.id === collId);
+      return { total: dc?.designs || 0, approved: dc?.approved || 0 };
+    }
     const d = designs.filter((x: any) => x.collection_id === collId);
     return { total: d.length, approved: d.filter((x: any) => x.approval_status === 'approved').length };
   };
@@ -53,8 +62,15 @@ const CollectionsPage: React.FC = () => {
 
   if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
+  const totalDesigns = isDemo ? demoCollections.reduce((s, c) => s + c.designs, 0) : designs.length;
+
   return (
     <div className="space-y-6 animate-fade-in">
+      {isDemo && (
+        <div className="bg-primary/5 border border-primary/20 rounded-lg px-4 py-2.5 text-xs text-muted-foreground font-body">
+          📊 Showing demo data. Create your first collection to see real data.
+        </div>
+      )}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h3 className="text-lg font-heading text-foreground">Collections</h3>
@@ -96,9 +112,9 @@ const CollectionsPage: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { icon: FolderOpen, label: 'Total Collections', value: collections.length.toString() },
-          { icon: Palette, label: 'Total Designs', value: designs.length.toString() },
-          { icon: Package, label: 'In Production', value: collections.filter(c => c.status === 'in_production').length.toString() },
-          { icon: TrendingUp, label: 'Launched', value: collections.filter(c => c.status === 'launched').length.toString() },
+          { icon: Palette, label: 'Total Designs', value: totalDesigns.toString() },
+          { icon: Package, label: 'In Production', value: collections.filter((c: any) => c.status === 'in_production').length.toString() },
+          { icon: TrendingUp, label: 'Launched', value: collections.filter((c: any) => c.status === 'launched').length.toString() },
         ].map(k => (
           <Card key={k.label}>
             <CardContent className="pt-4 pb-3 flex items-center gap-3">
@@ -113,8 +129,8 @@ const CollectionsPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filtered.length === 0 && <p className="text-sm text-muted-foreground font-body col-span-2 text-center py-8">No collections found. Create one to get started!</p>}
-        {filtered.map(c => {
+        {filtered.length === 0 && <p className="text-sm text-muted-foreground font-body col-span-2 text-center py-8">No collections found.</p>}
+        {filtered.map((c: any) => {
           const dc = designCounts(c.id);
           const progress = dc.total > 0 ? Math.round((dc.approved / dc.total) * 100) : 0;
           return (
@@ -127,7 +143,7 @@ const CollectionsPage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-1">
                     <Badge className={`text-[10px] shrink-0 ${statusColor[c.status || 'planning']}`}>{statusLabel[c.status || 'planning']}</Badge>
-                    {profile?.role === 'admin' && (
+                    {!isDemo && profile?.role === 'admin' && (
                       <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => { deleteMut.mutate(c.id); toast({ title: 'Deleted' }); }}><Trash2 className="w-3 h-3 text-destructive" /></Button>
                     )}
                   </div>

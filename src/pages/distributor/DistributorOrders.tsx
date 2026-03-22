@@ -12,6 +12,7 @@ import { useDistributorOrders, useCreateDistributorOrder } from '@/hooks/useDist
 import { useDesigns } from '@/hooks/useDesigns';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { demoDistributorOrders } from '@/data/demoData';
 
 const statusStyle: Record<string, string> = {
   delivered: 'bg-success text-success-foreground',
@@ -23,11 +24,14 @@ const statusStyle: Record<string, string> = {
 
 const DistributorOrders: React.FC = () => {
   const { profile } = useAuth();
-  const { data: orders = [], isLoading } = useDistributorOrders();
+  const { data: dbOrders = [], isLoading } = useDistributorOrders();
   const { data: designs = [] } = useDesigns({ approval_status: 'approved' });
   const createMut = useCreateDistributorOrder();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ design_id: '', quantity_ordered: '', shipping_address: '', notes: '' });
+
+  const isDemo = dbOrders.length === 0;
+  const orders = isDemo ? demoDistributorOrders : dbOrders;
 
   const handleCreate = async () => {
     if (!form.design_id || !form.quantity_ordered) return toast({ title: 'Design and quantity required', variant: 'destructive' });
@@ -53,6 +57,11 @@ const DistributorOrders: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {isDemo && (
+        <div className="bg-primary/5 border border-primary/20 rounded-lg px-4 py-2.5 text-xs text-muted-foreground font-body">
+          📊 Showing demo data. Place your first order to see real data.
+        </div>
+      )}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h3 className="text-lg font-heading text-foreground">My Orders</h3>
         <Dialog open={open} onOpenChange={setOpen}>
