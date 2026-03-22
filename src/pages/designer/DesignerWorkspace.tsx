@@ -14,6 +14,7 @@ import { useCollections } from '@/hooks/useCollections';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { demoDesigns } from '@/data/demoData';
 import DesignerAIAssistant from '@/components/designer/DesignerAIAssistant';
 import ProductViewer3D from '@/components/designer/ProductViewer3D';
 
@@ -26,8 +27,10 @@ const statusColor: Record<string, string> = {
 
 const DesignerWorkspace: React.FC = () => {
   const { profile, user } = useAuth();
-  const { data: designs = [], isLoading } = useDesigns({ designer_id: profile?.id });
+  const { data: dbDesigns = [], isLoading } = useDesigns({ designer_id: profile?.id });
   const { data: collections = [] } = useCollections();
+  const isDemo = dbDesigns.length === 0;
+  const designs = isDemo ? demoDesigns : dbDesigns;
   const createMut = useCreateDesign();
   const uploadMut = useUploadDesignFile();
   const updateMut = useUpdateDesign();
@@ -113,6 +116,11 @@ const DesignerWorkspace: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {isDemo && (
+        <div className="bg-primary/5 border border-primary/20 rounded-lg px-4 py-2.5 text-xs text-muted-foreground font-body">
+          📊 Showing demo designs. Upload or generate your first design to see real data.
+        </div>
+      )}
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[

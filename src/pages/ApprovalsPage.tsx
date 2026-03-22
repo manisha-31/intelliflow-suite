@@ -9,12 +9,13 @@ import { CheckCircle, XCircle, Clock, Eye, ThumbsUp, ThumbsDown, Loader2, Messag
 import { useApprovalDesigns, useApproveDesign, useRejectDesign } from '@/hooks/useApprovals';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { demoDesigns } from '@/data/demoData';
 
 const ApprovalsPage: React.FC = () => {
   const { profile } = useAuth();
-  const { data: pending = [], isLoading: lp } = useApprovalDesigns('pending');
-  const { data: approved = [] } = useApprovalDesigns('approved');
-  const { data: rejected = [] } = useApprovalDesigns('rejected');
+  const { data: dbPending = [], isLoading: lp } = useApprovalDesigns('pending');
+  const { data: dbApproved = [] } = useApprovalDesigns('approved');
+  const { data: dbRejected = [] } = useApprovalDesigns('rejected');
   const approveMut = useApproveDesign();
   const rejectMut = useRejectDesign();
   const [rejectDialog, setRejectDialog] = useState<{ open: boolean; designId: string }>({ open: false, designId: '' });
@@ -22,8 +23,14 @@ const ApprovalsPage: React.FC = () => {
   const [commentDialog, setCommentDialog] = useState<{ open: boolean; designId: string }>({ open: false, designId: '' });
   const [comment, setComment] = useState('');
 
+  const isDemo = dbPending.length === 0 && dbApproved.length === 0 && dbRejected.length === 0;
+  const pending = isDemo ? demoDesigns.filter(d => d.approval_status === 'in_review') : dbPending;
+  const approved = isDemo ? demoDesigns.filter(d => d.approval_status === 'approved') : dbApproved;
+  const rejected = isDemo ? demoDesigns.filter(d => d.approval_status === 'rejected') : dbRejected;
+
   const handleApprove = async (designId: string) => {
     if (!profile) return;
+    if (isDemo) return toast({ title: 'Demo mode — create real designs to use approvals' });
     try {
       await approveMut.mutateAsync({ designId, reviewerId: profile.id, comments: comment || undefined });
       toast({ title: 'Design approved!' });
@@ -34,6 +41,7 @@ const ApprovalsPage: React.FC = () => {
 
   const handleReject = async () => {
     if (!profile || !reason.trim()) return toast({ title: 'Reason required', variant: 'destructive' });
+    if (isDemo) return toast({ title: 'Demo mode — create real designs to use approvals' });
     try {
       await rejectMut.mutateAsync({ designId: rejectDialog.designId, reviewerId: profile.id, reason });
       setRejectDialog({ open: false, designId: '' });
@@ -46,6 +54,11 @@ const ApprovalsPage: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {isDemo && (
+        <div className="bg-primary/5 border border-primary/20 rounded-lg px-4 py-2.5 text-xs text-muted-foreground font-body">
+          📊 Showing demo data. Submit designs for review to see real approval queue.
+        </div>
+      )}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { icon: Clock, label: 'Pending Review', value: pending.length.toString(), color: 'text-warning' },
