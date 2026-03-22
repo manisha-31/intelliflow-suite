@@ -27,8 +27,10 @@ const statusColor: Record<string, string> = {
 
 const DesignerWorkspace: React.FC = () => {
   const { profile, user } = useAuth();
-  const { data: designs = [], isLoading } = useDesigns({ designer_id: profile?.id });
+  const { data: dbDesigns = [], isLoading } = useDesigns({ designer_id: profile?.id });
   const { data: collections = [] } = useCollections();
+  const isDemo = dbDesigns.length === 0;
+  const designs = isDemo ? demoDesigns : dbDesigns;
   const createMut = useCreateDesign();
   const uploadMut = useUploadDesignFile();
   const updateMut = useUpdateDesign();
