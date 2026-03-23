@@ -57,11 +57,6 @@ const DistributorOrders: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {isDemo && (
-        <div className="bg-primary/5 border border-primary/20 rounded-lg px-4 py-2.5 text-xs text-muted-foreground font-body">
-          📊 Showing demo data. Place your first order to see real data.
-        </div>
-      )}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h3 className="text-lg font-heading text-foreground">My Orders</h3>
         <Dialog open={open} onOpenChange={setOpen}>

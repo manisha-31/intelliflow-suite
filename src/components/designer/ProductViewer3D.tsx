@@ -18,15 +18,29 @@ interface ProductViewer3DProps {
 function ProductMesh({ imageUrl, color }: { imageUrl: string; color: string }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   React.useEffect(() => {
-    const loader = new THREE.TextureLoader();
-    loader.load(imageUrl, (tex) => {
+    setLoadError(false);
+    setTexture(null);
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const tex = new THREE.Texture(img);
+      tex.needsUpdate = true;
       tex.colorSpace = THREE.SRGBColorSpace;
       setTexture(tex);
-    }, undefined, () => {
-      // fallback — no texture
-    });
+    };
+    img.onerror = () => {
+      setLoadError(true);
+    };
+    img.src = imageUrl;
+
+    return () => {
+      img.onload = null;
+      img.onerror = null;
+    };
   }, [imageUrl]);
 
   useFrame((_, delta) => {
@@ -35,7 +49,7 @@ function ProductMesh({ imageUrl, color }: { imageUrl: string; color: string }) {
     }
   });
 
-  const aspect = texture ? texture.image.width / texture.image.height : 1;
+  const aspect = texture ? texture.image.width / texture.image.height : 4 / 3;
   const width = 2.4;
   const height = width / aspect;
 
@@ -44,21 +58,20 @@ function ProductMesh({ imageUrl, color }: { imageUrl: string; color: string }) {
       {/* Main product plane */}
       <mesh ref={meshRef} castShadow position={[0, 0.3, 0]}>
         <boxGeometry args={[width, height, 0.08]} />
-        <meshStandardMaterial
-          map={texture}
-          color={texture ? '#ffffff' : color}
-          roughness={0.3}
-          metalness={0.1}
-        />
+        {texture ? (
+          <meshStandardMaterial map={texture} roughness={0.3} metalness={0.1} />
+        ) : (
+          <meshStandardMaterial color={loadError ? '#ff6b6b' : color} roughness={0.3} metalness={0.1} />
+        )}
       </mesh>
       {/* Mannequin stand */}
       <mesh position={[0, -height / 2 - 0.2, 0]}>
         <cylinderGeometry args={[0.05, 0.05, 0.6, 16]} />
-        <meshStandardMaterial color="hsl(var(--muted-foreground))" metalness={0.8} roughness={0.2} />
+        <meshStandardMaterial color="#888888" metalness={0.8} roughness={0.2} />
       </mesh>
       <mesh position={[0, -height / 2 - 0.5, 0]}>
         <cylinderGeometry args={[0.4, 0.4, 0.04, 32]} />
-        <meshStandardMaterial color="hsl(var(--muted-foreground))" metalness={0.8} roughness={0.2} />
+        <meshStandardMaterial color="#888888" metalness={0.8} roughness={0.2} />
       </mesh>
     </group>
   );

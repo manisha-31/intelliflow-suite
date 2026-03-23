@@ -116,11 +116,6 @@ const DesignerWorkspace: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {isDemo && (
-        <div className="bg-primary/5 border border-primary/20 rounded-lg px-4 py-2.5 text-xs text-muted-foreground font-body">
-          📊 Showing demo designs. Upload or generate your first design to see real data.
-        </div>
-      )}
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
