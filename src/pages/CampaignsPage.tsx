@@ -63,11 +63,6 @@ const CampaignsPage: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {isDemo && (
-        <div className="bg-primary/5 border border-primary/20 rounded-lg px-4 py-2.5 text-xs text-muted-foreground font-body">
-          📊 Showing demo data. Create your first campaign to see real data.
-        </div>
-      )}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h3 className="text-lg font-heading text-foreground">Campaigns</h3>

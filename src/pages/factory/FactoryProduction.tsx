@@ -38,11 +38,6 @@ const FactoryProduction: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {isDemo && (
-        <div className="bg-primary/5 border border-primary/20 rounded-lg px-4 py-2.5 text-xs text-muted-foreground font-body">
-          📊 Showing demo data. Create production orders to see real data.
-        </div>
-      )}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { icon: Factory, label: 'Active Orders', value: orders.length.toString(), sub: `${orders.reduce((s: number, o: any) => s + (o.quantity || 0), 0).toLocaleString()} total units` },
