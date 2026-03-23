@@ -1,6 +1,6 @@
-import React, { useState, Suspense, useRef, useMemo } from 'react';
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { OrbitControls, Environment, ContactShadows, Html, RoundedBox } from '@react-three/drei';
+import React, { useState, Suspense, useRef } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls, Environment, ContactShadows, Html } from '@react-three/drei';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,9 +29,10 @@ function useImageTexture(url: string) {
       const tex = new THREE.Texture(img);
       tex.needsUpdate = true;
       tex.colorSpace = THREE.SRGBColorSpace;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
       tex.minFilter = THREE.LinearFilter;
       tex.magFilter = THREE.LinearFilter;
-      tex.generateMipmaps = true;
       setTexture(tex);
     };
     img.onerror = () => setError(true);
@@ -43,67 +44,141 @@ function useImageTexture(url: string) {
   return { texture, error };
 }
 
-// Front panel with design texture
-function DesignPanel({ imageUrl, autoRotate }: { imageUrl: string; autoRotate: boolean }) {
+const SKIN_COLOR = '#e8beac';
+const HAIR_COLOR = '#3d2b1f';
+
+// Human mannequin with clothing texture mapped onto the torso
+function HumanMannequin({ imageUrl, autoRotate }: { imageUrl: string; autoRotate: boolean }) {
   const groupRef = useRef<THREE.Group>(null);
   const { texture, error } = useImageTexture(imageUrl);
 
   useFrame((_, delta) => {
     if (groupRef.current && autoRotate) {
-      groupRef.current.rotation.y += delta * 0.3;
+      groupRef.current.rotation.y += delta * 0.25;
     }
   });
 
-  const aspect = texture ? texture.image.width / texture.image.height : 3 / 4;
-  const height = 2.8;
-  const width = height * aspect;
-  const clampedWidth = Math.min(width, 3.5);
+  const clothMat = texture
+    ? new THREE.MeshPhysicalMaterial({
+        map: texture,
+        roughness: 0.7,
+        metalness: 0.0,
+        clearcoat: 0.1,
+        side: THREE.DoubleSide,
+      })
+    : new THREE.MeshPhysicalMaterial({
+        color: error ? '#ff4444' : '#6366f1',
+        roughness: 0.6,
+      });
+
+  const skinMat = new THREE.MeshStandardMaterial({
+    color: SKIN_COLOR,
+    roughness: 0.8,
+    metalness: 0.0,
+  });
+
+  const hairMat = new THREE.MeshStandardMaterial({
+    color: HAIR_COLOR,
+    roughness: 0.9,
+  });
 
   return (
-    <group ref={groupRef} position={[0, 0.4, 0]}>
-      {/* Main design surface — slightly rounded box */}
-      <mesh castShadow receiveShadow>
-        <boxGeometry args={[clampedWidth, height, 0.06]} />
-        {texture ? (
-          <meshPhysicalMaterial
-            map={texture}
-            roughness={0.45}
-            metalness={0.05}
-            clearcoat={0.3}
-            clearcoatRoughness={0.4}
-            side={THREE.FrontSide}
-          />
-        ) : (
-          <meshPhysicalMaterial
-            color={error ? '#ff4444' : '#d4d4d8'}
-            roughness={0.5}
-            metalness={0.1}
-          />
-        )}
+    <group ref={groupRef} position={[0, -0.3, 0]}>
+      {/* === HEAD === */}
+      <mesh position={[0, 2.65, 0]} material={skinMat} castShadow>
+        <sphereGeometry args={[0.32, 32, 32]} />
+      </mesh>
+      {/* Hair */}
+      <mesh position={[0, 2.78, -0.05]} material={hairMat}>
+        <sphereGeometry args={[0.33, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
       </mesh>
 
-      {/* Back side */}
-      <mesh position={[0, 0, -0.031]}>
-        <boxGeometry args={[clampedWidth, height, 0.001]} />
-        <meshStandardMaterial color="#e8e8e8" roughness={0.8} />
+      {/* === NECK === */}
+      <mesh position={[0, 2.25, 0]} material={skinMat} castShadow>
+        <cylinderGeometry args={[0.12, 0.14, 0.2, 16]} />
       </mesh>
 
-      {/* Frame / border */}
-      <mesh>
-        <boxGeometry args={[clampedWidth + 0.06, height + 0.06, 0.04]} />
-        <meshStandardMaterial color="#a1a1aa" roughness={0.3} metalness={0.6} />
+      {/* === UPPER TORSO (with clothing texture) === */}
+      <mesh position={[0, 1.75, 0]} material={clothMat} castShadow>
+        <cylinderGeometry args={[0.52, 0.45, 0.8, 32]} />
       </mesh>
 
-      {/* Stand pole */}
-      <mesh position={[0, -height / 2 - 0.35, 0]}>
-        <cylinderGeometry args={[0.04, 0.04, 0.7, 16]} />
-        <meshStandardMaterial color="#71717a" metalness={0.9} roughness={0.15} />
+      {/* === LOWER TORSO (with clothing texture) === */}
+      <mesh position={[0, 1.15, 0]} material={clothMat} castShadow>
+        <cylinderGeometry args={[0.45, 0.38, 0.5, 32]} />
       </mesh>
 
-      {/* Stand base */}
-      <mesh position={[0, -height / 2 - 0.7, 0]} receiveShadow>
-        <cylinderGeometry args={[0.5, 0.55, 0.05, 32]} />
-        <meshStandardMaterial color="#71717a" metalness={0.9} roughness={0.15} />
+      {/* === WAIST / HIP (clothing) === */}
+      <mesh position={[0, 0.7, 0]} material={clothMat} castShadow>
+        <cylinderGeometry args={[0.38, 0.42, 0.4, 32]} />
+      </mesh>
+
+      {/* === SHOULDERS === */}
+      {/* Left shoulder */}
+      <mesh position={[-0.58, 2.0, 0]} material={clothMat} castShadow>
+        <sphereGeometry args={[0.16, 16, 16]} />
+      </mesh>
+      {/* Right shoulder */}
+      <mesh position={[0.58, 2.0, 0]} material={clothMat} castShadow>
+        <sphereGeometry args={[0.16, 16, 16]} />
+      </mesh>
+
+      {/* === UPPER ARMS (with sleeves / clothing) === */}
+      {/* Left upper arm */}
+      <mesh position={[-0.65, 1.6, 0]} rotation={[0, 0, 0.15]} material={clothMat} castShadow>
+        <cylinderGeometry args={[0.11, 0.1, 0.6, 16]} />
+      </mesh>
+      {/* Right upper arm */}
+      <mesh position={[0.65, 1.6, 0]} rotation={[0, 0, -0.15]} material={clothMat} castShadow>
+        <cylinderGeometry args={[0.11, 0.1, 0.6, 16]} />
+      </mesh>
+
+      {/* === FOREARMS (skin) === */}
+      {/* Left forearm */}
+      <mesh position={[-0.7, 1.05, 0]} rotation={[0, 0, 0.08]} material={skinMat} castShadow>
+        <cylinderGeometry args={[0.09, 0.08, 0.55, 16]} />
+      </mesh>
+      {/* Right forearm */}
+      <mesh position={[0.7, 1.05, 0]} rotation={[0, 0, -0.08]} material={skinMat} castShadow>
+        <cylinderGeometry args={[0.09, 0.08, 0.55, 16]} />
+      </mesh>
+
+      {/* === HANDS (skin) === */}
+      <mesh position={[-0.72, 0.72, 0]} material={skinMat}>
+        <sphereGeometry args={[0.08, 12, 12]} />
+      </mesh>
+      <mesh position={[0.72, 0.72, 0]} material={skinMat}>
+        <sphereGeometry args={[0.08, 12, 12]} />
+      </mesh>
+
+      {/* === UPPER LEGS (clothing - pants/skirt) === */}
+      <mesh position={[-0.2, 0.2, 0]} rotation={[0, 0, 0.03]} material={clothMat} castShadow>
+        <cylinderGeometry args={[0.17, 0.14, 0.6, 16]} />
+      </mesh>
+      <mesh position={[0.2, 0.2, 0]} rotation={[0, 0, -0.03]} material={clothMat} castShadow>
+        <cylinderGeometry args={[0.17, 0.14, 0.6, 16]} />
+      </mesh>
+
+      {/* === LOWER LEGS (skin or clothing) === */}
+      <mesh position={[-0.22, -0.35, 0]} material={skinMat} castShadow>
+        <cylinderGeometry args={[0.12, 0.1, 0.5, 16]} />
+      </mesh>
+      <mesh position={[0.22, -0.35, 0]} material={skinMat} castShadow>
+        <cylinderGeometry args={[0.12, 0.1, 0.5, 16]} />
+      </mesh>
+
+      {/* === FEET === */}
+      <mesh position={[-0.22, -0.65, 0.06]} material={new THREE.MeshStandardMaterial({ color: '#27272a', roughness: 0.9 })}>
+        <boxGeometry args={[0.14, 0.1, 0.26]} />
+      </mesh>
+      <mesh position={[0.22, -0.65, 0.06]} material={new THREE.MeshStandardMaterial({ color: '#27272a', roughness: 0.9 })}>
+        <boxGeometry args={[0.14, 0.1, 0.26]} />
+      </mesh>
+
+      {/* === STAND === */}
+      <mesh position={[0, -0.75, 0]} receiveShadow>
+        <cylinderGeometry args={[0.6, 0.65, 0.04, 32]} />
+        <meshStandardMaterial color="#52525b" metalness={0.9} roughness={0.15} />
       </mesh>
     </group>
   );
@@ -143,20 +218,18 @@ const ProductViewer3D: React.FC<ProductViewer3DProps> = ({ imageUrl, title }) =>
         <DialogHeader className="px-4 pt-4 pb-2">
           <DialogTitle className="text-sm font-heading flex items-center gap-2">
             <Eye className="w-4 h-4 text-primary" />
-            3D Product Viewer — {title}
-            <Badge variant="outline" className="text-[10px] ml-auto">Interactive</Badge>
+            3D Body Fit Preview — {title}
+            <Badge variant="outline" className="text-[10px] ml-auto">Body Fit</Badge>
           </DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 relative">
           <Canvas
             shadows
-            camera={{ position: [0, 0.5, 5], fov: 40 }}
+            camera={{ position: [0, 1.2, 5.5], fov: 35 }}
             gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2 }}
           >
             <color attach="background" args={[bgColor]} />
-
-            {/* Lighting */}
             <ambientLight intensity={0.5} />
             <directionalLight
               position={[5, 8, 5]}
@@ -169,21 +242,16 @@ const ProductViewer3D: React.FC<ProductViewer3DProps> = ({ imageUrl, title }) =>
             <spotLight position={[0, 6, 3]} intensity={0.5} angle={0.4} penumbra={0.8} />
 
             <Suspense fallback={<LoadingFallback />}>
-              <DesignPanel imageUrl={imageUrl} autoRotate={autoRotate} />
-              <ContactShadows
-                position={[0, -1.1, 0]}
-                opacity={0.6}
-                scale={10}
-                blur={2.5}
-                far={4}
-              />
+              <HumanMannequin imageUrl={imageUrl} autoRotate={autoRotate} />
+              <ContactShadows position={[0, -1.1, 0]} opacity={0.6} scale={10} blur={2.5} far={4} />
               <Environment preset="studio" />
             </Suspense>
 
             <OrbitControls
+              target={[0, 1.0, 0]}
               enablePan={false}
               minDistance={2.5}
-              maxDistance={8}
+              maxDistance={9}
               minPolarAngle={Math.PI / 6}
               maxPolarAngle={Math.PI / 1.5}
               enableDamping
